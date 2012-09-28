@@ -4,3 +4,14 @@ obj
 
 # mstest test results
 TestResults
+
+packages/
+
+# User-specific files
+*.suo
+*.user
+*.sln.docstates
+*.ncrunchsolution
+
+# ReSharper is a .NET coding add-in
+_ReSharper*
