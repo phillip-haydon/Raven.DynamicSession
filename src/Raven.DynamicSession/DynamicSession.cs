@@ -10,6 +10,11 @@ namespace Raven.DynamicSession
     {
         protected IDocumentSession Session { get; set; }
 
+        public static string DynamicClrTypePlaceHolder
+        {
+            get { return "Raven.DynamicSession.DynamicClrTypePlaceHolder"; }
+        }
+
         public DynamicSession(IDocumentSession session)
         {
             Session = session;
@@ -59,6 +64,7 @@ namespace Raven.DynamicSession
 
                     var metadata = Session.Advanced.GetMetadataFor(objectToStore);
                     metadata["Raven-Entity-Name"] = CollectionName;
+                    metadata[DynamicClrTypePlaceHolder] = CollectionName;
 
                     result = null;
                     return true;
