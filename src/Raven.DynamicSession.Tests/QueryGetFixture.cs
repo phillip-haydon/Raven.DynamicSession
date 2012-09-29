@@ -1,32 +1,16 @@
-﻿using System;
-using NUnit.Framework;
-using Raven.Abstractions.Data;
-using Raven.Client.Embedded;
+﻿using NUnit.Framework;
 
 namespace Raven.DynamicSession.Tests
 {
     [TestFixture]
-    public class QueryGetFixture
+    public class QueryGetFixture : EmbeddedRavenDBFixture
     {
         [Test]
         public void Can_query_post_after_dynamic_insert()
         {
             //Arrange
-            var store = (new EmbeddableDocumentStore
-            {
-                RunInMemory = true
-            }).Initialize();
-
-            //TODO: Wrap up the conventions for Raven.DynamicSession
-            store.Conventions.FindClrType = (id, doc, metadata) =>
-            {
-                var clrType = metadata.Value<string>(DynamicSession.DynamicClrTypePlaceHolder);
-                
-                if (clrType.Equals("Posts", StringComparison.OrdinalIgnoreCase)) 
-                    return "Raven.DynamicSession.Tests.QueryGetFixture.Post, Raven.DynamicSession.Tests";
-
-                return metadata.Value<string>(Constants.RavenClrType);
-            };
+            var store = GetStore();
+            Configure(store, typeof(Post), "Posts");
 
             using (dynamic session = store.OpenDynamicSession())
             {
