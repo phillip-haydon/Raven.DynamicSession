@@ -15,18 +15,18 @@ namespace Raven.DynamicSession.Tests
             }).Initialize();
         }
 
-        protected void Configure(IDocumentStore store, Type type, string bananas)
+        protected void Configure(IDocumentStore store, Type type, string clrPlaceHolder)
         {
             //TODO: Wrap up the conventions for Raven.DynamicSession
-            store.Conventions.FindClrType = (id, doc, metadata) =>
-            {
-                var clrType = metadata.Value<string>(DynamicSession.DynamicClrTypePlaceHolder);
+store.Conventions.FindClrType = (id, doc, metadata) =>
+{
+    var clrType = metadata.Value<string>(DynamicSession.DynamicClrTypePlaceHolder);
 
-                if (clrType.Equals(bananas, StringComparison.OrdinalIgnoreCase))
-                    return type.FullName;
+    if (clrType.Equals(clrPlaceHolder, StringComparison.OrdinalIgnoreCase))
+        return type.FullName;
 
-                return metadata.Value<string>(Constants.RavenClrType);
-            };
+    return metadata.Value<string>(Constants.RavenClrType);
+};
         }
     }
 }
