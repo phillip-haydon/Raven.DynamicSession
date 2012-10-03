@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Raven.Client.Document;
 
 namespace Raven.DynamicSession.TestConsole
@@ -15,6 +16,8 @@ namespace Raven.DynamicSession.TestConsole
 
             using (dynamic session = documentStore.OpenDynamicSession())
             {
+                Console.WriteLine("----- insert tests");
+
                 session.Posts.insert(new
                 {
                     Name = "Rabbit"
@@ -37,6 +40,26 @@ namespace Raven.DynamicSession.TestConsole
 
             using (dynamic session = documentStore.OpenDynamicSession())
             {
+                Console.WriteLine("----- all tests");
+
+                IEnumerable<dynamic> posts = session.Posts.all();
+                IEnumerable<dynamic> people = session.People.all();
+
+                foreach (var post in posts)
+                {
+                    Console.WriteLine(post.Name);
+                }
+
+                foreach (var person in people)
+                {
+                    Console.WriteLine(person.FirstName);
+                }
+            }
+
+            using (dynamic session = documentStore.OpenDynamicSession())
+            {
+                Console.WriteLine("----- load tests");
+
                 dynamic post1 = session.Posts.load(123);
                 Console.WriteLine(post1.Name);
 
@@ -47,6 +70,23 @@ namespace Raven.DynamicSession.TestConsole
                 Console.WriteLine(person1.FirstName);
 
                 dynamic person2 = session.People.Load(2);
+                Console.WriteLine(person2.FirstName);
+            }
+
+            using (dynamic session = documentStore.OpenDynamicSession())
+            {
+                Console.WriteLine("----- get tests");
+
+                dynamic post1 = session.Posts.gET(123);
+                Console.WriteLine(post1.Name);
+
+                dynamic post2 = session.Posts.get(909);
+                Console.WriteLine(post2.Name);
+
+                dynamic person1 = session.People.GET(1);
+                Console.WriteLine(person1.FirstName);
+
+                dynamic person2 = session.People.Get(2);
                 Console.WriteLine(person2.FirstName);
             }
 
