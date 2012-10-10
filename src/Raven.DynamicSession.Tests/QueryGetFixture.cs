@@ -135,7 +135,7 @@ namespace Raven.DynamicSession.Tests
             {
                 //Arrange
                 var store = GetStore();
-                Configure(store, typeof(Post), "Posts");
+                DynamicSession.AddClrType("Posts", typeof(Post));
 
                 using (dynamic session = store.OpenDynamicSession())
                 {

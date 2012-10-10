@@ -10,7 +10,7 @@ namespace Raven.DynamicSession.Tests
         {
             //Arrange
             var store = GetStore();
-            Configure(store, typeof (Banana), "Bananas");
+            DynamicSession.AddClrType("Bananas", typeof(Banana));
 
             using (dynamic session = store.OpenDynamicSession())
             {
@@ -39,7 +39,7 @@ namespace Raven.DynamicSession.Tests
         {
             //Arrange
             var store = GetStore();
-            Configure(store, typeof(Banana), "Bananas");
+            DynamicSession.AddClrType("Bananas", typeof(Banana));
 
             using (dynamic session = store.OpenDynamicSession())
             {

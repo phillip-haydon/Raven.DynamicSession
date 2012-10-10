@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
+using Raven.Abstractions.Data;
 using Raven.Client;
 
 namespace Raven.DynamicSession
@@ -8,6 +11,18 @@ namespace Raven.DynamicSession
     public class DynamicSession : DynamicObject, IDisposable
     {
         protected IDocumentSession Session { get; set; }
+        public static IDictionary<string, string> ClrTypeConversions { get; private set; }
+
+        static DynamicSession()
+        {
+            ClrTypeConversions = new ConcurrentDictionary<string, string>();
+        }
+
+        public static void AddClrType(string name, Type of)
+        {
+            if (!ClrTypeConversions.ContainsKey(name.ToLower()))
+                ClrTypeConversions.Add(name.ToLower(), of.FullName);
+        }
 
         public static string DynamicClrTypePlaceHolder
         {
@@ -24,7 +39,7 @@ namespace Raven.DynamicSession
             result = new ChainBuilder(this, Session, binder.Name);
             return true;
         }
-        
+
         public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
         {
             throw new MissingMethodException("There are no methods off the root Dynamic Session, first value"
@@ -51,32 +66,32 @@ namespace Raven.DynamicSession
                 {
                     case "load":
                     case "get":
-                    {
-                        if (args.Length != 1)
                         {
-                            throw new ArgumentException("Get/Load should have 1 parameter, 1:Id");
-                        }
+                            if (args.Length != 1)
+                            {
+                                throw new ArgumentException("Get/Load should have 1 parameter, 1:Id");
+                            }
 
-                        HandleLoad(args, out result);
-                        return true;
-                    }
+                            HandleLoad(args, out result);
+                            return true;
+                        }
                     case "insert":
-                    {
-                        if (args.Length != 2)
                         {
-                            throw new ArgumentException("Insert should have 2 parameters, 1:ObjectToStore, 2:Id");
+                            if (args.Length != 2)
+                            {
+                                throw new ArgumentException("Insert should have 2 parameters, 1:ObjectToStore, 2:Id");
+                            }
+
+                            return HandleInsert(args, out result);
                         }
-
-                        return HandleInsert(args, out result);
-                    }
                     case "all":
-                    {
-                        result = Session.Advanced.LuceneQuery<dynamic>()
-                                        .WhereEquals("@metadata.Raven-Entity-Name", CollectionName)
-                                        .ToList();
+                        {
+                            result = Session.Advanced.LuceneQuery<dynamic>()
+                                            .WhereEquals("@metadata.Raven-Entity-Name", CollectionName)
+                                            .ToList();
 
-                        return true;
-                    }
+                            return true;
+                        }
                 }
 
                 throw new MissingMethodException("Method {0} does not exist. Allowed methods are: Get/Load, Insert, All");
@@ -97,7 +112,7 @@ namespace Raven.DynamicSession
                 }
                 else
                 {
-                    id = (string) args[0];
+                    id = (string)args[0];
                 }
 
                 result = Session.Load<dynamic>(id);
@@ -120,7 +135,7 @@ namespace Raven.DynamicSession
                 }
                 else
                 {
-                    id = (string) args[1];
+                    id = (string)args[1];
                 }
 
                 Session.Store(objectToStore, id);
@@ -128,6 +143,9 @@ namespace Raven.DynamicSession
                 var metadata = Session.Advanced.GetMetadataFor(objectToStore);
                 metadata["Raven-Entity-Name"] = CollectionName;
                 metadata[DynamicClrTypePlaceHolder] = CollectionName;
+
+                if (DynamicSession.ClrTypeConversions.ContainsKey(CollectionName.ToLower()))
+                    metadata[Constants.RavenClrType] = ClrTypeConversions[CollectionName.ToLower()];
 
                 result = objectToStore;
                 return true;

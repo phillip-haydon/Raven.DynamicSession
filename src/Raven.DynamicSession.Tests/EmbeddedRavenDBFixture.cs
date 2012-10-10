@@ -9,24 +9,14 @@ namespace Raven.DynamicSession.Tests
     {
         protected IDocumentStore GetStore()
         {
-            return (new EmbeddableDocumentStore
+            var store = (new EmbeddableDocumentStore
             {
                 RunInMemory = true
             }).Initialize();
-        }
 
-        protected void Configure(IDocumentStore store, Type type, string clrPlaceHolder)
-        {
-            //TODO: Wrap up the conventions for Raven.DynamicSession
-store.Conventions.FindClrType = (id, doc, metadata) =>
-{
-    var clrType = metadata.Value<string>(DynamicSession.DynamicClrTypePlaceHolder);
+            store.ConfigureDynamimcSession();
 
-    if (clrType.Equals(clrPlaceHolder, StringComparison.OrdinalIgnoreCase))
-        return type.FullName;
-
-    return metadata.Value<string>(Constants.RavenClrType);
-};
+            return store;
         }
     }
 }
